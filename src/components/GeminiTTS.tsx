@@ -129,13 +129,13 @@ export default function GeminiTTS({
       firstParagraph = paragraphs.slice(0, 2).join(' ').trim()
     }
     
-    // Limit to reasonable length for speed (max 800 chars)
-    if (firstParagraph.length > 800) {
+    // Limit to reasonable length for speed (max 500 chars to avoid timeout)
+    if (firstParagraph.length > 500) {
       // Split on sentences and take first few
       const sentences = firstParagraph.match(/[^.!?]+[.!?]+/g) || [firstParagraph]
       let result = ''
       for (const sentence of sentences) {
-        if ((result + sentence).length <= 800) {
+        if ((result + sentence).length <= 500) {
           result += sentence
         } else {
           break
@@ -176,11 +176,14 @@ export default function GeminiTTS({
     }
 
     try {
-      const textToSpeak = isMarkdown ? convertMarkdownToPlainText(content) : content
+      const fullText = isMarkdown ? convertMarkdownToPlainText(content) : content
+      // Use only first paragraph to avoid timeout
+      const textToSpeak = getFirstParagraph(fullText)
       const styledText = selectedEmotion.prompt + textToSpeak
 
       console.log('🚀 Generating TTS audio...', {
-        textLength: textToSpeak.length,
+        originalLength: fullText.length,
+        processedLength: textToSpeak.length,
         voice: selectedVoice.name,
         emotion: selectedEmotion.name
       })
@@ -323,7 +326,7 @@ export default function GeminiTTS({
           onClick={generateTTS}
           disabled={isStreaming || ttsStatus === 'generating' || ttsStatus === 'loading'}
           className={getTtsButtonClass()}
-          title={`Lees voor met ${selectedVoice.name} stem`}
+          title={`Lees voor met ${selectedVoice.name} stem (eerste paragraaf)`}
         >
           <span className="truncate">{getTtsButtonText()}</span>
         </button>
@@ -396,4 +399,4 @@ export default function GeminiTTS({
       )}
     </div>
   )
-} 
+}
