@@ -1,65 +1,71 @@
-import NapoleonChatBot from '@/components/NapoleonChatBot'
+import StageAssessmentApp from '@/components/StageAssessmentApp'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-500 rounded-full mb-6 shadow-lg">
-            <span className="text-3xl">👑</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-6 shadow-lg">
+            <span className="text-2xl text-white">📊</span>
           </div>
           
-          <h1 className="text-5xl font-bold text-white mb-4">
-            Chat met Napoleon Bonaparte
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+            Stage Project Beoordelingssysteem
           </h1>
           
-          <p className="text-xl text-blue-200 font-medium mb-6 max-w-2xl mx-auto">
-            Praat direct met de Franse keizer! Stel vragen over zijn leven, veldslagen, politiek en de tijd waarin hij leefde (1769-1821).
+          <p className="text-xl text-gray-600 font-medium mb-6 max-w-3xl mx-auto">
+            Upload je projectvoorstel en verantwoordingsverslag voor een geautomatiseerde beoordeling volgens de officiële rubriek.
           </p>
 
-          <div className="bg-blue-800/50 backdrop-blur-sm rounded-lg p-4 max-w-3xl mx-auto border border-blue-600">
-            <h2 className="text-lg font-semibold text-yellow-300 mb-3">📚 Voor HAVO 5 Geschiedenis</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-100">
-              <div>
-                <h3 className="font-medium text-yellow-200 mb-2">🎯 Onderwerpen om te bespreken:</h3>
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 max-w-4xl mx-auto border border-blue-200 shadow-lg">
+            <h2 className="text-lg font-semibold text-blue-700 mb-4">🎯 Beoordelingscriteria</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <h3 className="font-medium text-blue-800 mb-2">📋 Projectvoorstel</h3>
                 <ul className="space-y-1 text-xs">
-                  <li>• Franse Revolutie en opkomst</li>
-                  <li>• Napoleontische oorlogen</li>
-                  <li>• Code Napoleon (wetgeving)</li>
-                  <li>• Continentaal Stelsel</li>
-                  <li>• Slag bij Waterloo</li>
-                  <li>• Ballingschap op Elba en Sint-Helena</li>
+                  <li>• Probleemstelling & doelstelling</li>
+                  <li>• Onderzoeksvragen</li>
+                  <li>• Methodologie & planning</li>
+                  <li>• Haalbaarheid & relevantie</li>
                 </ul>
               </div>
-              <div>
-                <h3 className="font-medium text-yellow-200 mb-2">💡 Voorbeeldvragen:</h3>
+              <div className="bg-green-50 p-3 rounded-lg">
+                <h3 className="font-medium text-green-800 mb-2">📝 Verantwoordingsverslag</h3>
                 <ul className="space-y-1 text-xs">
-                  <li>• "Hoe werd je keizer van Frankrijk?"</li>
-                  <li>• "Waarom viel je Rusland binnen?"</li>
-                  <li>• "Wat was je grootste overwinning?"</li>
-                  <li>• "Hoe zag je dagelijks leven eruit?"</li>
-                  <li>• "Wat vind je van de moderne tijd?"</li>
+                  <li>• Reflectie op proces</li>
+                  <li>• Analyse van resultaten</li>
+                  <li>• Conclusies & aanbevelingen</li>
+                  <li>• Persoonlijke ontwikkeling</li>
+                </ul>
+              </div>
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <h3 className="font-medium text-purple-800 mb-2">⭐ Kwaliteitscriteria</h3>
+                <ul className="space-y-1 text-xs">
+                  <li>• Structuur & opbouw</li>
+                  <li>• Taalgebruik & stijl</li>
+                  <li>• Bronvermelding & APA</li>
+                  <li>• Originaliteit & creativiteit</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Chat Interface */}
-        <div className="max-w-4xl mx-auto">
-          <NapoleonChatBot />
+        {/* Main Assessment Interface */}
+        <div className="max-w-6xl mx-auto">
+          <StageAssessmentApp />
         </div>
 
         {/* Footer */}
         <div className="text-center mt-12">
-          <div className="inline-flex items-center space-x-4 text-blue-300">
-            <span>⚔️</span>
-            <span>Vive l'Empereur!</span>
-            <span>⚔️</span>
+          <div className="inline-flex items-center space-x-4 text-blue-600">
+            <span>📊</span>
+            <span>Professionele Stage Beoordeling</span>
+            <span>📊</span>
           </div>
-          <p className="text-blue-400 text-sm mt-2">
-            Educatieve Napoleon AI • HAVO 5 Geschiedenis • Powered by Gemini AI
+          <p className="text-gray-500 text-sm mt-2">
+            Geautomatiseerde beoordeling • AI-powered analyse • Objectieve waardering
           </p>
         </div>
       </div>

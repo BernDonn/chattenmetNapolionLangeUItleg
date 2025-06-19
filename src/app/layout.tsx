@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Chat met Napoleon Bonaparte - HAVO 5 Geschiedenis',
-  description: 'Educatieve chatbot waar HAVO 5 leerlingen kunnen praten met Napoleon Bonaparte over geschiedenis, veldslagen en zijn leven.',
+  title: 'Stage Project Beoordelingssysteem',
+  description: 'Professionele tool voor het beoordelen van stage projectvoorstellen en verantwoordingsverslagen volgens officiële rubrieken.',
 }
 
 export default function RootLayout({
