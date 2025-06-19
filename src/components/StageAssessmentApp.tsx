@@ -21,7 +21,7 @@ interface AssessmentResult {
   weight: number
 }
 
-const ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
+const DEFAULT_ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
   {
     category: "Projectvoorstel",
     criteria: [
@@ -102,16 +102,20 @@ const ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
 export default function StageAssessmentApp() {
   const [projectProposal, setProjectProposal] = useState('')
   const [accountabilityReport, setAccountabilityReport] = useState('')
+  const [rubricDocument, setRubricDocument] = useState('')
+  const [assessmentCriteria, setAssessmentCriteria] = useState<AssessmentCriteria[]>(DEFAULT_ASSESSMENT_CRITERIA)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([])
   const [finalGrade, setFinalGrade] = useState<number | null>(null)
   const [detailedFeedback, setDetailedFeedback] = useState('')
   const [currentStep, setCurrentStep] = useState<'input' | 'analysis' | 'results'>('input')
+  const [useCustomRubric, setUseCustomRubric] = useState(false)
   
   const proposalRef = useRef<HTMLTextAreaElement>(null)
   const reportRef = useRef<HTMLTextAreaElement>(null)
+  const rubricRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleFileUpload = async (file: File, type: 'proposal' | 'report') => {
+  const handleFileUpload = async (file: File, type: 'proposal' | 'report' | 'rubric') => {
     if (!file.name.match(/\.(txt|md|docx|pdf)$/i)) {
       alert('Alleen .txt, .md, .docx en .pdf bestanden zijn toegestaan')
       return
@@ -122,8 +126,11 @@ export default function StageAssessmentApp() {
         const text = await file.text()
         if (type === 'proposal') {
           setProjectProposal(text)
-        } else {
+        } else if (type === 'report') {
           setAccountabilityReport(text)
+        } else if (type === 'rubric') {
+          setRubricDocument(text)
+          setUseCustomRubric(true)
         }
       } else {
         // Voor PDF/DOCX bestanden - gebruik de bestaande upload API
@@ -142,8 +149,11 @@ export default function StageAssessmentApp() {
         const data = await response.json()
         if (type === 'proposal') {
           setProjectProposal(data.content)
-        } else {
+        } else if (type === 'report') {
           setAccountabilityReport(data.content)
+        } else if (type === 'rubric') {
+          setRubricDocument(data.content)
+          setUseCustomRubric(true)
         }
       }
     } catch (error) {
@@ -154,7 +164,7 @@ export default function StageAssessmentApp() {
 
   const analyzeDocuments = async () => {
     if (!projectProposal.trim() || !accountabilityReport.trim()) {
-      alert('Beide documenten zijn vereist voor de beoordeling')
+      alert('Projectvoorstel en verantwoordingsverslag zijn vereist voor de beoordeling')
       return
     }
 
@@ -162,16 +172,20 @@ export default function StageAssessmentApp() {
     setCurrentStep('analysis')
 
     try {
+      // Bepaal welke criteria te gebruiken
+      const criteriaToUse = useCustomRubric && rubricDocument.trim() 
+        ? `AANGEPASTE RUBRIEK:\n${rubricDocument}` 
+        : `STANDAARD BEOORDELINGSCRITERIA:\n${assessmentCriteria.map(category => 
+            `\n${category.category}:\n${category.criteria.map(c => 
+              `- ${c.name} (${c.weight}%): ${c.description}`
+            ).join('\n')}`
+          ).join('\n')}`
+
       // Maak een gedetailleerde prompt voor de AI beoordeling
       const assessmentPrompt = `
-Je bent een ervaren docent die stage projecten beoordeelt. Analyseer de volgende documenten volgens de gegeven criteria en geef een objectieve beoordeling.
+Je bent een ervaren docent die stage projecten beoordeelt. Analyseer de volgende documenten volgens de gegeven criteria en geef een objectieve, professionele beoordeling.
 
-BEOORDELINGSCRITERIA:
-${ASSESSMENT_CRITERIA.map(category => 
-  `\n${category.category}:\n${category.criteria.map(c => 
-    `- ${c.name} (${c.weight}%): ${c.description}`
-  ).join('\n')}`
-).join('\n')}
+${criteriaToUse}
 
 PROJECTVOORSTEL:
 ${projectProposal}
@@ -179,24 +193,33 @@ ${projectProposal}
 VERANTWOORDINGSVERSLAG:
 ${accountabilityReport}
 
-Geef voor elk criterium:
-1. Een score van 1-10
-2. Specifieke feedback met concrete voorbeelden uit de tekst
-3. Verbeterpunten
+INSTRUCTIES:
+1. Analyseer beide documenten grondig volgens de criteria
+2. Geef voor elk criterium een score van 1-10 met onderbouwing
+3. Verwijs naar specifieke passages uit de documenten
+4. Geef constructieve feedback en verbeterpunten
+5. Bereken het eindcijfer als gewogen gemiddelde
 
-Bereken het eindcijfer als gewogen gemiddelde van alle criteria.
+${useCustomRubric ? 
+  'LET OP: Gebruik de aangepaste rubriek die is geüpload. Interpreteer de criteria en wegingen zoals beschreven in het rubric document.' :
+  'Gebruik de standaard criteria met de aangegeven wegingen.'
+}
 
 Structureer je antwoord als volgt:
+
 ## Gedetailleerde Beoordeling per Criterium
 
 ### [Categorie]: [Criterium naam]
 **Score: X/10**
-**Feedback:** [Specifieke feedback met voorbeelden]
-**Verbeterpunten:** [Concrete suggesties]
+**Weging: X%**
+**Feedback:** [Specifieke feedback met voorbeelden uit de tekst]
+**Verbeterpunten:** [Concrete suggesties voor verbetering]
 
 ## Eindcijfer en Samenvatting
 **Eindcijfer: X.X**
-**Algemene feedback:** [Overzicht van sterke punten en verbeterpunten]
+**Berekening:** [Toon de gewogen berekening]
+**Algemene feedback:** [Overzicht van sterke punten en belangrijkste verbeterpunten]
+**Aanbevelingen:** [Concrete stappen voor verbetering]
 `
 
       const response = await fetch('/api/chat', {
@@ -226,7 +249,7 @@ Structureer je antwoord als volgt:
       let totalWeight = 0
 
       // Simuleer scores gebaseerd op AI analyse (in een echte implementatie zou je de AI response parsen)
-      ASSESSMENT_CRITERIA.forEach(category => {
+      assessmentCriteria.forEach(category => {
         category.criteria.forEach(criterium => {
           // Voor demo doeleinden - in productie zou je de AI response parsen voor echte scores
           const score = Math.floor(Math.random() * 3) + 7 // Score tussen 7-10 voor demo
@@ -261,10 +284,13 @@ Structureer je antwoord als volgt:
   const resetAssessment = () => {
     setProjectProposal('')
     setAccountabilityReport('')
+    setRubricDocument('')
     setAssessmentResults([])
     setFinalGrade(null)
     setDetailedFeedback('')
     setCurrentStep('input')
+    setUseCustomRubric(false)
+    setAssessmentCriteria(DEFAULT_ASSESSMENT_CRITERIA)
   }
 
   const getGradeColor = (grade: number) => {
@@ -294,6 +320,17 @@ Structureer je antwoord als volgt:
           </button>
         </div>
 
+        {/* Rubriek indicator */}
+        <div className="mb-4">
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
+            useCustomRubric 
+              ? 'bg-purple-100 text-purple-700' 
+              : 'bg-blue-100 text-blue-700'
+          }`}>
+            {useCustomRubric ? '📋 Aangepaste Rubriek' : '📋 Standaard Rubriek'}
+          </div>
+        </div>
+
         {/* Eindcijfer */}
         {finalGrade && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-6 border border-blue-200">
@@ -311,7 +348,7 @@ Structureer je antwoord als volgt:
 
         {/* Scores per criterium */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {ASSESSMENT_CRITERIA.map((category, categoryIndex) => (
+          {assessmentCriteria.map((category, categoryIndex) => (
             <div key={categoryIndex} className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">{category.category}</h3>
               <div className="space-y-3">
@@ -370,7 +407,7 @@ Structureer je antwoord als volgt:
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">🔍 Documenten Analyseren</h2>
           <p className="text-gray-600 mb-6">
-            De AI analyseert je projectvoorstel en verantwoordingsverslag volgens de beoordelingscriteria...
+            De AI analyseert je documenten volgens {useCustomRubric ? 'je aangepaste rubriek' : 'de standaard beoordelingscriteria'}...
           </p>
           <div className="bg-blue-50 rounded-lg p-4 max-w-md mx-auto">
             <div className="text-sm text-blue-700">
@@ -382,8 +419,12 @@ Structureer je antwoord als volgt:
                 <span>📝</span>
                 <span>Verantwoordingsverslag wordt beoordeeld</span>
               </div>
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <span>{useCustomRubric ? '📋' : '⭐'}</span>
+                <span>{useCustomRubric ? 'Aangepaste rubriek wordt toegepast' : 'Standaard criteria worden toegepast'}</span>
+              </div>
               <div className="flex items-center justify-center space-x-2">
-                <span>⭐</span>
+                <span>🎯</span>
                 <span>Scores worden berekend</span>
               </div>
             </div>
@@ -396,6 +437,65 @@ Structureer je antwoord als volgt:
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Upload je Stage Documenten</h2>
+      
+      {/* Rubriek Upload Section */}
+      <div className="mb-8 bg-purple-50 rounded-lg p-6 border border-purple-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-purple-700">📋 Beoordelingsrubriek (Optioneel)</h3>
+          <div className="flex items-center space-x-4">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useCustomRubric}
+                onChange={(e) => {
+                  setUseCustomRubric(e.target.checked)
+                  if (!e.target.checked) {
+                    setRubricDocument('')
+                  }
+                }}
+                className="rounded text-purple-600"
+              />
+              <span className="text-sm text-purple-700">Gebruik aangepaste rubriek</span>
+            </label>
+            <label className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors text-sm">
+              📁 Upload rubriek
+              <input
+                type="file"
+                accept=".txt,.md,.docx,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleFileUpload(file, 'rubric')
+                }}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
+        
+        {useCustomRubric && (
+          <div className="space-y-4">
+            <textarea
+              ref={rubricRef}
+              value={rubricDocument}
+              onChange={(e) => setRubricDocument(e.target.value)}
+              placeholder="Plak hier je beoordelingsrubriek of upload een bestand. Beschrijf de criteria, wegingen en scoringsinstructies..."
+              className="w-full h-32 p-4 border border-purple-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+            
+            {rubricDocument && (
+              <div className="text-sm text-purple-600 bg-purple-100 px-3 py-2 rounded-lg">
+                ✅ Aangepaste rubriek geladen ({rubricDocument.length} karakters)
+              </div>
+            )}
+          </div>
+        )}
+        
+        {!useCustomRubric && (
+          <div className="text-sm text-purple-600 bg-purple-100 px-3 py-2 rounded-lg">
+            💡 Standaard rubriek wordt gebruikt. Vink hierboven aan om je eigen rubriek te uploaden.
+          </div>
+        )}
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Projectvoorstel */}
@@ -466,26 +566,28 @@ Structureer je antwoord als volgt:
       </div>
 
       {/* Beoordelingscriteria Preview */}
-      <div className="mt-8 bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 Beoordelingscriteria</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {ASSESSMENT_CRITERIA.map((category, index) => (
-            <div key={index} className="bg-white rounded-lg p-4 border">
-              <h4 className="font-medium text-gray-700 mb-3">{category.category}</h4>
-              <div className="space-y-2">
-                {category.criteria.map((criterium, criteriumIndex) => (
-                  <div key={criteriumIndex} className="text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">{criterium.name}</span>
-                      <span className="text-blue-600 font-medium">{criterium.weight}%</span>
+      {!useCustomRubric && (
+        <div className="mt-8 bg-gray-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 Standaard Beoordelingscriteria</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {assessmentCriteria.map((category, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 border">
+                <h4 className="font-medium text-gray-700 mb-3">{category.category}</h4>
+                <div className="space-y-2">
+                  {category.criteria.map((criterium, criteriumIndex) => (
+                    <div key={criteriumIndex} className="text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">{criterium.name}</span>
+                        <span className="text-blue-600 font-medium">{criterium.weight}%</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Analyse Button */}
       <div className="mt-8 text-center">
@@ -509,7 +611,13 @@ Structureer je antwoord als volgt:
         
         {(!projectProposal.trim() || !accountabilityReport.trim()) && (
           <p className="text-red-600 text-sm mt-2">
-            Beide documenten zijn vereist voor de beoordeling
+            Projectvoorstel en verantwoordingsverslag zijn vereist voor de beoordeling
+          </p>
+        )}
+        
+        {useCustomRubric && !rubricDocument.trim() && (
+          <p className="text-orange-600 text-sm mt-1">
+            💡 Tip: Upload je rubriek voor een meer accurate beoordeling
           </p>
         )}
       </div>
