@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import mammoth from 'mammoth'
 
+// Dynamic import for PDF parsing to avoid serverless issues
+async function parsePDF(buffer: Buffer): Promise<string> {
+  try {
+    // Use pdfjs-dist which is more reliable in serverless environments
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
+    
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument({ data: buffer })
+    const pdf = await loadingTask.promise
+    
+    let textContent = ''
+    
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum)
+      const content = await page.getTextContent()
+      
+      // Combine text items
+      const pageText = content.items
+        .map((item: any) => item.str)
+        .join(' ')
+      
+      textContent += pageText + '\n'
+    }
+    
+    return textContent.trim()
+  } catch (error) {
+    console.error('PDF parsing error with pdfjs-dist:', error)
+    throw new Error('Fout bij het lezen van het PDF bestand')
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
@@ -38,11 +70,9 @@ export async function POST(request: NextRequest) {
       textContent = result.value
       fileType = 'Word Document (.docx)'
     } else if (isPdf) {
-      // Extract text from .pdf using pdf-parse with dynamic import
+      // Extract text from .pdf using pdfjs-dist
       try {
-        const pdfParse = (await import('pdf-parse')).default
-        const pdfData = await pdfParse(buffer)
-        textContent = pdfData.text
+        textContent = await parsePDF(buffer)
         fileType = 'PDF Document (.pdf)'
       } catch (pdfError) {
         console.error('PDF parsing error:', pdfError)
@@ -108,4 +138,4 @@ export async function GET() {
     { error: 'GET method not allowed. Use POST to upload files.' },
     { status: 405 }
   )
-} 
+}
