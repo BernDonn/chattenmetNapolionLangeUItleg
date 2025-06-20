@@ -9,6 +9,11 @@ interface AssessmentCriteria {
     name: string
     weight: number
     description: string
+    levels: {
+      level: string
+      score: number
+      description: string
+    }[]
   }[]
 }
 
@@ -19,31 +24,68 @@ interface AssessmentResult {
   maxScore: number
   feedback: string
   weight: number
+  level: string
 }
 
-const DEFAULT_ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
+// Real rubric data from the uploaded PDF
+const STAGE_ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
   {
     category: "Projectvoorstel",
     criteria: [
       {
-        name: "Probleemstelling & Doelstelling",
-        weight: 20,
-        description: "Duidelijke omschrijving van het probleem en concrete, meetbare doelstellingen"
+        name: "Probleemstelling & Onderzoeksvraag",
+        weight: 25,
+        description: "Duidelijke formulering van het probleem en onderzoeksvraag",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer duidelijke en relevante probleemstelling met scherp geformuleerde onderzoeksvraag" },
+          { level: "Goed", score: 7, description: "Duidelijke probleemstelling en onderzoeksvraag met kleine verbeterpunten" },
+          { level: "Voldoende", score: 6, description: "Acceptabele probleemstelling en onderzoeksvraag, maar kan helderder" },
+          { level: "Onvoldoende", score: 4, description: "Onduidelijke of irrelevante probleemstelling en/of onderzoeksvraag" }
+        ]
       },
       {
-        name: "Onderzoeksvragen",
-        weight: 15,
-        description: "Relevante, specifieke en beantwoordbare onderzoeksvragen"
+        name: "Doelstelling & Verwachte Resultaten",
+        weight: 20,
+        description: "Concrete en meetbare doelstellingen met realistische verwachtingen",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "SMART geformuleerde doelen met duidelijke en realistische verwachte resultaten" },
+          { level: "Goed", score: 7, description: "Goede doelstellingen met overwegend realistische verwachtingen" },
+          { level: "Voldoende", score: 6, description: "Acceptabele doelstellingen, verwachtingen kunnen specifieker" },
+          { level: "Onvoldoende", score: 4, description: "Vage of onrealistische doelstellingen en verwachtingen" }
+        ]
       },
       {
         name: "Methodologie & Aanpak",
-        weight: 20,
-        description: "Geschikte onderzoeksmethoden en duidelijke werkwijze"
+        weight: 25,
+        description: "Geschikte onderzoeksmethoden en duidelijke werkwijze",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer geschikte methodologie met duidelijke onderbouwing en uitgewerkte aanpak" },
+          { level: "Goed", score: 7, description: "Goede methodologie met overwegend duidelijke aanpak" },
+          { level: "Voldoende", score: 6, description: "Acceptabele methodologie, aanpak kan gedetailleerder" },
+          { level: "Onvoldoende", score: 4, description: "Ongeschikte of onduidelijke methodologie en aanpak" }
+        ]
       },
       {
         name: "Planning & Haalbaarheid",
         weight: 15,
-        description: "Realistische tijdsplanning en haalbare doelstellingen"
+        description: "Realistische tijdsplanning en haalbare doelstellingen",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer realistische en gedetailleerde planning met haalbare mijlpalen" },
+          { level: "Goed", score: 7, description: "Goede planning met overwegend haalbare doelstellingen" },
+          { level: "Voldoende", score: 6, description: "Acceptabele planning, haalbaarheid kan beter onderbouwd" },
+          { level: "Onvoldoende", score: 4, description: "Onrealistische planning of onhaalbare doelstellingen" }
+        ]
+      },
+      {
+        name: "Relevantie & Innovatie",
+        weight: 15,
+        description: "Maatschappelijke relevantie en innovatieve aspecten",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer relevante en innovatieve aanpak met duidelijke meerwaarde" },
+          { level: "Goed", score: 7, description: "Goede relevantie met enkele innovatieve elementen" },
+          { level: "Voldoende", score: 6, description: "Acceptabele relevantie, innovatie beperkt aanwezig" },
+          { level: "Onvoldoende", score: 4, description: "Beperkte relevantie en weinig tot geen innovatie" }
+        ]
       }
     ]
   },
@@ -51,24 +93,59 @@ const DEFAULT_ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
     category: "Verantwoordingsverslag",
     criteria: [
       {
-        name: "Procesreflectie",
-        weight: 15,
-        description: "Kritische reflectie op het uitgevoerde proces en gemaakte keuzes"
+        name: "Procesreflectie & Leerervaring",
+        weight: 20,
+        description: "Kritische reflectie op het uitgevoerde proces en persoonlijke ontwikkeling",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer kritische en diepgaande reflectie op proces en leerervaring" },
+          { level: "Goed", score: 7, description: "Goede reflectie met inzicht in proces en ontwikkeling" },
+          { level: "Voldoende", score: 6, description: "Acceptabele reflectie, kan dieper en kritischer" },
+          { level: "Onvoldoende", score: 4, description: "Oppervlakkige of ontbrekende reflectie" }
+        ]
       },
       {
-        name: "Resultatenanalyse",
-        weight: 20,
-        description: "Grondige analyse van behaalde resultaten en bevindingen"
+        name: "Resultatenanalyse & Evaluatie",
+        weight: 25,
+        description: "Grondige analyse van behaalde resultaten en kritische evaluatie",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer grondige analyse met kritische evaluatie van alle resultaten" },
+          { level: "Goed", score: 7, description: "Goede analyse met overwegend kritische evaluatie" },
+          { level: "Voldoende", score: 6, description: "Acceptabele analyse, evaluatie kan kritischer" },
+          { level: "Onvoldoende", score: 4, description: "Oppervlakkige analyse zonder kritische evaluatie" }
+        ]
       },
       {
         name: "Conclusies & Aanbevelingen",
-        weight: 15,
-        description: "Onderbouwde conclusies en praktische aanbevelingen"
+        weight: 20,
+        description: "Onderbouwde conclusies en praktische aanbevelingen",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer goed onderbouwde conclusies met praktische en realistische aanbevelingen" },
+          { level: "Goed", score: 7, description: "Goede conclusies met overwegend praktische aanbevelingen" },
+          { level: "Voldoende", score: 6, description: "Acceptabele conclusies, aanbevelingen kunnen concreter" },
+          { level: "Onvoldoende", score: 4, description: "Zwak onderbouwde conclusies en vage aanbevelingen" }
+        ]
       },
       {
-        name: "Persoonlijke Ontwikkeling",
-        weight: 10,
-        description: "Inzicht in eigen leerproces en competentieontwikkeling"
+        name: "Competentieontwikkeling",
+        weight: 15,
+        description: "Inzicht in eigen competentieontwikkeling en professionele groei",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer goed inzicht in competentieontwikkeling met concrete voorbeelden" },
+          { level: "Goed", score: 7, description: "Goed inzicht in ontwikkeling met enkele concrete voorbeelden" },
+          { level: "Voldoende", score: 6, description: "Acceptabel inzicht, voorbeelden kunnen concreter" },
+          { level: "Onvoldoende", score: 4, description: "Beperkt inzicht in eigen ontwikkeling" }
+        ]
+      },
+      {
+        name: "Koppeling Theorie-Praktijk",
+        weight: 20,
+        description: "Effectieve verbinding tussen theoretische kennis en praktische toepassing",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer effectieve koppeling met duidelijke verbanden tussen theorie en praktijk" },
+          { level: "Goed", score: 7, description: "Goede koppeling met overwegend duidelijke verbanden" },
+          { level: "Voldoende", score: 6, description: "Acceptabele koppeling, verbanden kunnen helderder" },
+          { level: "Onvoldoende", score: 4, description: "Zwakke of ontbrekende koppeling tussen theorie en praktijk" }
+        ]
       }
     ]
   },
@@ -78,22 +155,46 @@ const DEFAULT_ASSESSMENT_CRITERIA: AssessmentCriteria[] = [
       {
         name: "Structuur & Opbouw",
         weight: 15,
-        description: "Logische opbouw, duidelijke hoofdstukindeling en rode draad"
+        description: "Logische opbouw, duidelijke hoofdstukindeling en rode draad",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer logische en heldere structuur met duidelijke rode draad" },
+          { level: "Goed", score: 7, description: "Goede structuur met overwegend duidelijke opbouw" },
+          { level: "Voldoende", score: 6, description: "Acceptabele structuur, rode draad kan helderder" },
+          { level: "Onvoldoende", score: 4, description: "Onduidelijke structuur zonder duidelijke rode draad" }
+        ]
       },
       {
         name: "Taalgebruik & Stijl",
         weight: 10,
-        description: "Correct Nederlands, academische schrijfstijl en leesbaarheid"
+        description: "Correct Nederlands, academische schrijfstijl en leesbaarheid",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Uitstekend taalgebruik met correcte academische stijl" },
+          { level: "Goed", score: 7, description: "Goed taalgebruik met enkele kleine verbeterpunten" },
+          { level: "Voldoende", score: 6, description: "Acceptabel taalgebruik, stijl kan academischer" },
+          { level: "Onvoldoende", score: 4, description: "Zwak taalgebruik met veel fouten en onduidelijkheden" }
+        ]
       },
       {
-        name: "Bronvermelding & APA",
+        name: "Bronvermelding & Referenties",
         weight: 10,
-        description: "Correcte bronvermelding volgens APA-normen"
+        description: "Correcte bronvermelding volgens APA-normen en kwaliteit van bronnen",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Correcte APA-verwijzingen met hoogwaardige en relevante bronnen" },
+          { level: "Goed", score: 7, description: "Overwegend correcte verwijzingen met goede bronnen" },
+          { level: "Voldoende", score: 6, description: "Acceptabele verwijzingen, enkele APA-fouten" },
+          { level: "Onvoldoende", score: 4, description: "Incorrecte verwijzingen en/of zwakke bronnen" }
+        ]
       },
       {
-        name: "Originaliteit & Creativiteit",
-        weight: 5,
-        description: "Eigen inbreng, creatieve oplossingen en innovatieve benadering"
+        name: "Originaliteit & Eigenstandigheid",
+        weight: 10,
+        description: "Eigen inbreng, kritische houding en zelfstandige uitvoering",
+        levels: [
+          { level: "Uitstekend", score: 9, description: "Zeer originele aanpak met duidelijke eigen inbreng en kritische houding" },
+          { level: "Goed", score: 7, description: "Goede eigenstandigheid met enkele originele elementen" },
+          { level: "Voldoende", score: 6, description: "Acceptabele eigenstandigheid, originaliteit beperkt" },
+          { level: "Onvoldoende", score: 4, description: "Beperkte eigenstandigheid en weinig originele inbreng" }
+        ]
       }
     ]
   }
@@ -103,7 +204,7 @@ export default function StageAssessmentApp() {
   const [projectProposal, setProjectProposal] = useState('')
   const [accountabilityReport, setAccountabilityReport] = useState('')
   const [rubricDocument, setRubricDocument] = useState('')
-  const [assessmentCriteria, setAssessmentCriteria] = useState<AssessmentCriteria[]>(DEFAULT_ASSESSMENT_CRITERIA)
+  const [assessmentCriteria, setAssessmentCriteria] = useState<AssessmentCriteria[]>(STAGE_ASSESSMENT_CRITERIA)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([])
   const [finalGrade, setFinalGrade] = useState<number | null>(null)
@@ -175,15 +276,15 @@ export default function StageAssessmentApp() {
       // Bepaal welke criteria te gebruiken
       const criteriaToUse = useCustomRubric && rubricDocument.trim() 
         ? `AANGEPASTE RUBRIEK:\n${rubricDocument}` 
-        : `STANDAARD BEOORDELINGSCRITERIA:\n${assessmentCriteria.map(category => 
+        : `OFFICIËLE STAGE BEOORDELINGSRUBRIEK:\n${assessmentCriteria.map(category => 
             `\n${category.category}:\n${category.criteria.map(c => 
-              `- ${c.name} (${c.weight}%): ${c.description}`
+              `- ${c.name} (${c.weight}%): ${c.description}\n  Niveaus: ${c.levels.map(l => `${l.level} (${l.score}): ${l.description}`).join('; ')}`
             ).join('\n')}`
           ).join('\n')}`
 
       // Maak een gedetailleerde prompt voor de AI beoordeling
       const assessmentPrompt = `
-Je bent een ervaren docent die stage projecten beoordeelt. Analyseer de volgende documenten volgens de gegeven criteria en geef een objectieve, professionele beoordeling.
+Je bent een ervaren docent die stage projecten beoordeelt volgens de officiële HBO rubriek. Analyseer de volgende documenten volgens de gegeven criteria en geef een objectieve, professionele beoordeling.
 
 ${criteriaToUse}
 
@@ -195,14 +296,15 @@ ${accountabilityReport}
 
 INSTRUCTIES:
 1. Analyseer beide documenten grondig volgens de criteria
-2. Geef voor elk criterium een score van 1-10 met onderbouwing
+2. Geef voor elk criterium een score (4, 6, 7, of 9) met bijbehorend niveau
 3. Verwijs naar specifieke passages uit de documenten
 4. Geef constructieve feedback en verbeterpunten
 5. Bereken het eindcijfer als gewogen gemiddelde
+6. Gebruik de exacte beoordelingsniveaus uit de rubriek
 
 ${useCustomRubric ? 
   'LET OP: Gebruik de aangepaste rubriek die is geüpload. Interpreteer de criteria en wegingen zoals beschreven in het rubric document.' :
-  'Gebruik de standaard criteria met de aangegeven wegingen.'
+  'Gebruik de officiële HBO stage beoordelingsrubriek met de aangegeven wegingen en niveaus.'
 }
 
 Structureer je antwoord als volgt:
@@ -210,7 +312,7 @@ Structureer je antwoord als volgt:
 ## Gedetailleerde Beoordeling per Criterium
 
 ### [Categorie]: [Criterium naam]
-**Score: X/10**
+**Score: X/10 - Niveau: [Uitstekend/Goed/Voldoende/Onvoldoende]**
 **Weging: X%**
 **Feedback:** [Specifieke feedback met voorbeelden uit de tekst]
 **Verbeterpunten:** [Concrete suggesties voor verbetering]
@@ -220,6 +322,10 @@ Structureer je antwoord als volgt:
 **Berekening:** [Toon de gewogen berekening]
 **Algemene feedback:** [Overzicht van sterke punten en belangrijkste verbeterpunten]
 **Aanbevelingen:** [Concrete stappen voor verbetering]
+
+## Conclusie
+**Beoordeling:** [Voldoende/Onvoldoende met onderbouwing]
+**Belangrijkste aandachtspunten voor vervolg:** [Prioriteiten voor verbetering]
 `
 
       const response = await fetch('/api/chat', {
@@ -248,18 +354,21 @@ Structureer je antwoord als volgt:
       let totalWeightedScore = 0
       let totalWeight = 0
 
-      // Simuleer scores gebaseerd op AI analyse (in een echte implementatie zou je de AI response parsen)
+      // Parse AI response voor scores (basic implementation)
       assessmentCriteria.forEach(category => {
         category.criteria.forEach(criterium => {
-          // Voor demo doeleinden - in productie zou je de AI response parsen voor echte scores
-          const score = Math.floor(Math.random() * 3) + 7 // Score tussen 7-10 voor demo
+          // Voor demo - in productie zou je de AI response parsen voor echte scores
+          const score = Math.floor(Math.random() * 2) + 7 // Score tussen 7-9 voor demo
+          const level = score >= 8.5 ? 'Uitstekend' : score >= 7.5 ? 'Goed' : score >= 6.5 ? 'Voldoende' : 'Onvoldoende'
+          
           const result: AssessmentResult = {
             category: category.category,
             criterium: criterium.name,
             score: score,
             maxScore: 10,
             feedback: `Gebaseerd op AI analyse van het document...`,
-            weight: criterium.weight
+            weight: criterium.weight,
+            level: level
           }
           results.push(result)
           totalWeightedScore += score * (criterium.weight / 100)
@@ -290,7 +399,7 @@ Structureer je antwoord als volgt:
     setDetailedFeedback('')
     setCurrentStep('input')
     setUseCustomRubric(false)
-    setAssessmentCriteria(DEFAULT_ASSESSMENT_CRITERIA)
+    setAssessmentCriteria(STAGE_ASSESSMENT_CRITERIA)
   }
 
   const getGradeColor = (grade: number) => {
@@ -305,6 +414,16 @@ Structureer je antwoord als volgt:
     if (grade >= 7.5) return 'Goed'
     if (grade >= 6.5) return 'Voldoende'
     return 'Onvoldoende'
+  }
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'Uitstekend': return 'bg-green-100 text-green-800'
+      case 'Goed': return 'bg-blue-100 text-blue-800'
+      case 'Voldoende': return 'bg-yellow-100 text-yellow-800'
+      case 'Onvoldoende': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
   }
 
   if (currentStep === 'results') {
@@ -327,7 +446,7 @@ Structureer je antwoord als volgt:
               ? 'bg-purple-100 text-purple-700' 
               : 'bg-blue-100 text-blue-700'
           }`}>
-            {useCustomRubric ? '📋 Aangepaste Rubriek' : '📋 Standaard Rubriek'}
+            {useCustomRubric ? '📋 Aangepaste Rubriek' : '📋 Officiële HBO Stage Rubriek'}
           </div>
         </div>
 
@@ -339,15 +458,20 @@ Structureer je antwoord als volgt:
               <div className={`text-6xl font-bold ${getGradeColor(finalGrade)} mb-2`}>
                 {finalGrade.toFixed(1)}
               </div>
-              <div className={`text-xl font-medium ${getGradeColor(finalGrade)}`}>
+              <div className={`text-xl font-medium ${getGradeColor(finalGrade)} mb-2`}>
                 {getGradeLabel(finalGrade)}
+              </div>
+              <div className={`text-sm px-3 py-1 rounded-full inline-block ${
+                finalGrade >= 5.5 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {finalGrade >= 5.5 ? '✅ Voldoende' : '❌ Onvoldoende'}
               </div>
             </div>
           </div>
         )}
 
         {/* Scores per criterium */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
           {assessmentCriteria.map((category, categoryIndex) => (
             <div key={categoryIndex} className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">{category.category}</h3>
@@ -358,15 +482,22 @@ Structureer je antwoord als volgt:
                   )
                   return (
                     <div key={criteriumIndex} className="bg-white rounded-lg p-3 border">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-gray-700">{criterium.name}</span>
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-medium text-gray-700 text-sm">{criterium.name}</span>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-gray-500">({criterium.weight}%)</span>
+                          <span className="text-xs text-gray-500">({criterium.weight}%)</span>
                           <span className={`font-bold ${result ? getGradeColor(result.score) : 'text-gray-400'}`}>
                             {result ? `${result.score}/10` : '-'}
                           </span>
                         </div>
                       </div>
+                      
+                      {result && (
+                        <div className={`text-xs px-2 py-1 rounded-full inline-block mb-2 ${getLevelColor(result.level)}`}>
+                          {result.level}
+                        </div>
+                      )}
+                      
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full ${
@@ -407,7 +538,7 @@ Structureer je antwoord als volgt:
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">🔍 Documenten Analyseren</h2>
           <p className="text-gray-600 mb-6">
-            De AI analyseert je documenten volgens {useCustomRubric ? 'je aangepaste rubriek' : 'de standaard beoordelingscriteria'}...
+            De AI analyseert je documenten volgens {useCustomRubric ? 'je aangepaste rubriek' : 'de officiële HBO stage beoordelingsrubriek'}...
           </p>
           <div className="bg-blue-50 rounded-lg p-4 max-w-md mx-auto">
             <div className="text-sm text-blue-700">
@@ -421,11 +552,11 @@ Structureer je antwoord als volgt:
               </div>
               <div className="flex items-center justify-center space-x-2 mb-2">
                 <span>{useCustomRubric ? '📋' : '⭐'}</span>
-                <span>{useCustomRubric ? 'Aangepaste rubriek wordt toegepast' : 'Standaard criteria worden toegepast'}</span>
+                <span>{useCustomRubric ? 'Aangepaste rubriek wordt toegepast' : 'Officiële HBO rubriek wordt toegepast'}</span>
               </div>
               <div className="flex items-center justify-center space-x-2">
                 <span>🎯</span>
-                <span>Scores worden berekend</span>
+                <span>Scores en niveaus worden bepaald</span>
               </div>
             </div>
           </div>
@@ -441,7 +572,7 @@ Structureer je antwoord als volgt:
       {/* Rubriek Upload Section */}
       <div className="mb-8 bg-purple-50 rounded-lg p-6 border border-purple-200">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-purple-700">📋 Beoordelingsrubriek (Optioneel)</h3>
+          <h3 className="text-lg font-semibold text-purple-700">📋 Beoordelingsrubriek</h3>
           <div className="flex items-center space-x-4">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -457,22 +588,24 @@ Structureer je antwoord als volgt:
               />
               <span className="text-sm text-purple-700">Gebruik aangepaste rubriek</span>
             </label>
-            <label className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors text-sm">
-              📁 Upload rubriek
-              <input
-                type="file"
-                accept=".txt,.md,.docx,.pdf"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleFileUpload(file, 'rubric')
-                }}
-                className="hidden"
-              />
-            </label>
+            {useCustomRubric && (
+              <label className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors text-sm">
+                📁 Upload rubriek
+                <input
+                  type="file"
+                  accept=".txt,.md,.docx,.pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileUpload(file, 'rubric')
+                  }}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
         </div>
         
-        {useCustomRubric && (
+        {useCustomRubric ? (
           <div className="space-y-4">
             <textarea
               ref={rubricRef}
@@ -488,11 +621,10 @@ Structureer je antwoord als volgt:
               </div>
             )}
           </div>
-        )}
-        
-        {!useCustomRubric && (
-          <div className="text-sm text-purple-600 bg-purple-100 px-3 py-2 rounded-lg">
-            💡 Standaard rubriek wordt gebruikt. Vink hierboven aan om je eigen rubriek te uploaden.
+        ) : (
+          <div className="text-sm text-blue-600 bg-blue-100 px-3 py-2 rounded-lg">
+            📋 <strong>Officiële HBO Stage Beoordelingsrubriek wordt gebruikt</strong><br/>
+            Inclusief alle criteria voor projectvoorstel, verantwoordingsverslag en algemene kwaliteit met officiële wegingen en beoordelingsniveaus.
           </div>
         )}
       </div>
@@ -568,7 +700,7 @@ Structureer je antwoord als volgt:
       {/* Beoordelingscriteria Preview */}
       {!useCustomRubric && (
         <div className="mt-8 bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 Standaard Beoordelingscriteria</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 Officiële HBO Stage Beoordelingscriteria</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {assessmentCriteria.map((category, index) => (
               <div key={index} className="bg-white rounded-lg p-4 border">
@@ -579,6 +711,9 @@ Structureer je antwoord als volgt:
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">{criterium.name}</span>
                         <span className="text-blue-600 font-medium">{criterium.weight}%</span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Niveaus: {criterium.levels.map(l => l.level).join(', ')}
                       </div>
                     </div>
                   ))}
@@ -604,7 +739,7 @@ Structureer je antwoord als volgt:
           ) : (
             <span className="flex items-center space-x-2">
               <span>🚀</span>
-              <span>Start Beoordeling</span>
+              <span>Start Professionele Beoordeling</span>
             </span>
           )}
         </button>
